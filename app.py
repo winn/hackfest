@@ -1,70 +1,127 @@
 import streamlit as st
 import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
-
-def kmeans_clustering(url, k):
-    # read the CSV file from the URL into a Pandas DataFrame
-    df = pd.read_csv(url)
-
-    # select only the columns that have a numeric data type
-    numeric_cols = df.select_dtypes(include=["int", "float"]).columns.tolist()
+from sklearn.feature_extraction.text import CountVectorizer
+import numpy as np
+import re
 
 
-    # create a new DataFrame with only the selected columns
-    df = df[numeric_cols]
-    df = df.dropna()
 
-    # perform K-Means clustering on the data with K equals to k
-    kmeans = KMeans(n_clusters=k)
-    kmeans.fit(df)
+url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQdYosYor7k_lxER-u8UUyIYwUbevb8Ygr-xO7fT-coTtkXt8Owh-BL_PuJ3jnkWWOyY6wXbt1z1GGx/pub?gid=1365251745&single=true&output=csv'
 
-    # get the cluster labels for each data point
-    labels = kmeans.labels_
+dat = pd.read_csv(url)
 
-    # add the cluster labels as a new column to the DataFrame
-    df['cluster'] = labels
+profile = dat.iloc[:,7].fillna('').values
+vectorizer = CountVectorizer(ngram_range=(2,5), analyzer='char')
+X = vectorizer.fit_transform(profile)
 
-    # perform PCA on the selected features to reduce the dimensions to two
-    pca = PCA(n_components=2)
-    pca.fit(df[numeric_cols])
-    features_2d = pca.transform(df[numeric_cols])
 
-    # add the two PCA dimensions to the DataFrame
-    df['feature_1'] = features_2d[:, 0]
-    df['feature_2'] = features_2d[:, 1]
 
-    # return the DataFrame with the cluster labels and PCA dimensions
-    return df
+def getrank(query):
+  res = vectorizer.transform([query])
+  sortscore = X.dot(res.T).toarray()[:,0]/(np.diff(X.indptr)+0.001)
+  sortind = np.argsort(sortscore)[::-1]
+  return sortind
 
-# create the Streamlit app
+def getmatch(query):
+    res = getrank(query)
+    return dat.iloc[res.tolist()].iloc[:,[7,1]]
+
+# Define function to display a pandas DataFrame or Series with wrapped text
+def display_data(df):
+    st.write(
+        """
+    <style>
+    .dataframe tbody tr td {
+        white-space: pre-wrap;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    # Display DataFrame
+    st.dataframe(df)
+
+def display_html(resList):
+
+    st.markdown(
+        """
+    <style>
+    table {
+      font-family: sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      background-color: #000000;
+    }
+
+    td, th {
+      border: 1px solid #ffffff;
+      text-align: left;
+      padding: 8px;
+      color: #ffffff;
+      font-weight: normal;
+    }
+
+    tr:nth-child(even) {
+      background-color: #222222;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #000000;
+    }
+
+    tr:hover {
+      background-color: #444444;
+    }
+
+    .stTextInput input {
+      border: 2px solid #2e3d49;
+      border-radius: 5px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .stTextInput input:focus {
+      outline: none;
+      border-color: #4d7bb7;
+      box-shadow: 0 0 5px #4d7bb7;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    res = ''
+    for r in resList:
+        res = res + '<tr><th>%s</th><th>%s</th></tr>'%(r[0],r[1])
+
+    html = '''
+        <tr>
+            <th>Profile</th>
+            <th>Contact</th>
+        </tr>
+    ''' 
+
+
+    html_content = html + res
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
 def app():
-    st.title("K-Means Clustering App")
+    mail = st.text_input('กรุณาใส่ E-mail ของคุณที่ลงทะเบียนหาทีม', 'ใส่ E-mail ...')
+    query = dat[dat['Email address']==mail]['กรุณาเขียนเล่าถึงทีมงานที่อยากได้ (เพื่อการ matching ที่ตรงกับความต้องการ กรุณากรอกข้อมูลในส่วนนี้ให้มากที่สุด)']
+    if len(query)>0:
+        query = query.values[0]
+        st.text(query)
 
-    # get the URL of the CSV file from the user
-    url = st.text_input("Enter the URL of the CSV file")
 
-    # get the value of K from the user
-    k = st.slider("Select the value of K", min_value=2, max_value=10)
+        df = getmatch(query)
+        # return df
 
-    # run the K-Means clustering function on the data
-    if st.button("Run Clustering"):
-        result_df = kmeans_clustering(url, k)
+        # display_data(df)
+        # resList = ['hello','world']
+        display_html(df.values)
 
-        # display the result as a table in Streamlit
-        st.write(result_df)
-
-        # visualize the clusters in a 2D scatter plot
-        fig, ax = plt.subplots()
-        for label in result_df['cluster'].unique():
-            cluster_df = result_df[result_df['cluster'] == label]
-            ax.scatter(cluster_df['feature_1'], cluster_df['feature_2'], label=f'Cluster {label}')
-        ax.set_xlabel('Feature 1')
-        ax.set_ylabel('Feature 2')
-        ax.set_title(f'K-Means Clustering (K={k})')
-        ax.legend()
-        st.pyplot(fig)
 
 # call the Streamlit app
 if __name__ == "__main__":
