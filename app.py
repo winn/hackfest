@@ -111,7 +111,7 @@ def display_html(resList,cate,memq,memd):
 
         <tr>
             <th>สนใจแข่งหมวด</th>
-            <th>ความสามารถ</th>
+            <th>หมวดความสามารถ</th>
             <th>ประสบการณ์</th>
             <th>E-mail</th>
             <th>คะแนนตรงตามต้องการ</th>
