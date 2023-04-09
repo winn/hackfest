@@ -36,7 +36,7 @@ def getmatch(query,mail):
     rdat['score'] = res
     rdat = rdat[rdat['Email address']!=mail]
     rdat = rdat.sort_values(by='score',ascending=False)
-    return rdat.iloc[0:3,[4,5,7,1,-1]]
+    return rdat.iloc[0:3,[4,5,7,2,1,-1]]
 
 # Define function to display a pandas DataFrame or Series with wrapped text
 def display_data(df):
@@ -105,7 +105,7 @@ def display_html(resList,cate,memq,memd):
 
     res = ''
     for r in resList:
-        res = res + '<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%.1f</th></tr>'%(r[0],r[1],r[2],r[3],r[4]*100)
+        res = res + '<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%.1f</th></tr>'%(r[0],r[1],r[2],r[3],r[4],r[5]*100)
 
     html = '''
 
@@ -113,6 +113,7 @@ def display_html(resList,cate,memq,memd):
             <th>สนใจแข่งหมวด</th>
             <th>หมวดความสามารถ</th>
             <th>ประสบการณ์</th>
+            <th>ชื่อเล่น</th>
             <th>E-mail</th>
             <th>คะแนนตรงตามต้องการ</th>
         </tr>
