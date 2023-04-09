@@ -10,7 +10,11 @@ url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQdYosYor7k_lxER-u8UUyIYw
 
 dat = pd.read_csv(url)
 
-dat['catprof'] = dat.iloc[:,4].fillna('')+dat.iloc[:,7].fillna('')
+dat['ตัวเองมีความเข้าใจหมวดใดบ้าง'] = dat['ตัวเองมีความเข้าใจหมวดใดบ้าง'].str.extract('(\S+)')
+dat['ตามหาสมาชิกมาช่วยหมวดไหน'] = dat['ตามหาสมาชิกมาช่วยหมวดไหน'].str.extract('(\S+)')
+
+
+dat['catprof'] = dat.iloc[:,4].fillna('')+dat.iloc[:,5].fillna('')+dat.iloc[:,7].fillna('')
 profile = dat['catprof'].values
 vectorizer = CountVectorizer(ngram_range=(2,5), analyzer='char')
 X = vectorizer.fit_transform(profile)
@@ -32,7 +36,7 @@ def getmatch(query,mail):
     rdat['score'] = res
     rdat = rdat[rdat['Email address']!=mail]
     rdat = rdat.sort_values(by='score',ascending=False)
-    return rdat.iloc[0:3,[4,7,1,-1]]
+    return rdat.iloc[0:3,[4,5,7,1,-1]]
 
 # Define function to display a pandas DataFrame or Series with wrapped text
 def display_data(df):
@@ -50,7 +54,7 @@ def display_data(df):
     # Display DataFrame
     st.dataframe(df)
 
-def display_html(resList,cate,memd):
+def display_html(resList,cate,memq,memd):
 
     st.markdown(
         """
@@ -101,18 +105,19 @@ def display_html(resList,cate,memd):
 
     res = ''
     for r in resList:
-        res = res + '<tr><th>%s</th><th>%s</th><th>%s</th><th>%.1f</th></tr>'%(r[0],r[1],r[2],r[3]*100)
+        res = res + '<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%.1f</th></tr>'%(r[0],r[1],r[2],r[3],r[4]*100)
 
     html = '''
 
         <tr>
             <th>สนใจแข่งหมวด</th>
-            <th>โปรไฟล์</th>
+            <th>ความสามารถ</th>
+            <th>ประสบการณ์</th>
             <th>E-mail</th>
             <th>คะแนนตรงตามต้องการ</th>
         </tr>
     '''
-    header = '''<p>คุณสนใจลงแข่งหมวด:<br> %s</p><p>สมาชิกที่ต้องการ:<br> %s</p>'''%(cate,memd)
+    header = '''<p>คุณสนใจลงแข่งหมวด:<br> %s</p><p>ตามหาสมาชิกมาช่วยหมวด:<br>%s</p><p>ลักษณะทีมงานที่ต้องการ:<br>%s</p>'''%(cate,memq,memd)
     st.markdown(header, unsafe_allow_html=True)
 
     html_content = html + res
@@ -126,8 +131,9 @@ def app():
     
     if len(query)>0:
         cate = query['สนใจแข่งหมวดไหน'].values[0]
+        memq = query['ตามหาสมาชิกมาช่วยหมวดไหน'].values[0]
         memd = query['กรุณาเขียนเล่าถึงทีมงานที่อยากได้ (เพื่อการ matching ที่ตรงกับความต้องการ กรุณากรอกข้อมูลในส่วนนี้ให้มากที่สุด)'].values[0]
-        query = cate+memd
+        query = cate+memq+memd
 
         # st.text(query)
 
@@ -137,7 +143,7 @@ def app():
 
         # display_data(df)
         # resList = ['hello','world']
-        display_html(df.values,cate,memd)
+        display_html(df.values,cate,memq,memd)
 
 
 # call the Streamlit app
