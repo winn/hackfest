@@ -10,8 +10,9 @@ url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQdYosYor7k_lxER-u8UUyIYw
 
 dat = pd.read_csv(url)
 
-dat['ตัวเองมีความเข้าใจหมวดใดบ้าง'] = dat['ตัวเองมีความเข้าใจหมวดใดบ้าง'].str.extract('(\S+)')
-dat['ตามหาสมาชิกมาช่วยหมวดไหน'] = dat['ตามหาสมาชิกมาช่วยหมวดไหน'].str.extract('(\S+)')
+dat['สนใจแข่งหมวดไหน'] = dat['สนใจแข่งหมวดไหน'].str.replace('[^A-Za-z\s]', '')
+dat['ตัวเองมีความเข้าใจหมวดใดบ้าง'] = dat['ตัวเองมีความเข้าใจหมวดใดบ้าง'].str.replace('[^A-Za-z\s]', '')
+dat['ตามหาสมาชิกมาช่วยหมวดไหน'] = dat['ตามหาสมาชิกมาช่วยหมวดไหน'].str.replace('[^A-Za-z\s]', '')
 
 
 dat['catprof'] = dat.iloc[:,4].fillna('')+dat.iloc[:,5].fillna('')+dat.iloc[:,7].fillna('')
