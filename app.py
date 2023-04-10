@@ -127,11 +127,11 @@ def display_html(resList,cate,memq,memd):
 
 
 def app():
-    mail = st.text_input('กรุณาใส่ E-mail ของคุณที่ลงทะเบียนหาทีม', 'ใส่ E-mail ...')
+    mail = st.text_input('กรุณาใส่ E-mail ของคุณที่ลงทะเบียนหาทีม', '')
     mail = mail.strip()
     query = dat[dat['Email address']==mail]
     
-    if len(query)>0:
+    if (len(mail)>0) & (len(query)>0):
         cate = query['สนใจแข่งหมวดไหน'].values[0]
         memq = query['ตามหาสมาชิกมาช่วยหมวดไหน'].values[0]
         memd = query['กรุณาเขียนเล่าถึงทีมงานที่อยากได้ (เพื่อการ matching ที่ตรงกับความต้องการ กรุณากรอกข้อมูลในส่วนนี้ให้มากที่สุด)'].values[0]
@@ -146,6 +146,11 @@ def app():
         # display_data(df)
         # resList = ['hello','world']
         display_html(df.values,cate,memq,memd)
+    if (len(mail)>0) & (len(query)==0):
+        header = '''<p>คุณยังไม่ได้ลงทะเบียนหาทีม กรุณาลงทะเบียนก่อนครับ</p>
+        <a href="https://forms.gle/B4iKSbtM7zzh41ZB8">คลิกที่นี่เพื่อลงทะเบียนครับ</a>'''
+        st.markdown(header, unsafe_allow_html=True)
+
 
 
 # call the Streamlit app
