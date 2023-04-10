@@ -127,14 +127,11 @@ def display_html(resList,cate,memq,memd):
 
 
 def app():
-    header = '''<p>กรุณาใส่ E-mail ของคุณที่ลงทะเบียนหาทีม</p>'''
-    st.markdown(header, unsafe_allow_html=True)
-
-    mail = st.text_input('', '')
+    mail = st.text_input('กรุณาใส่ E-mail ของคุณที่ลงทะเบียนหาทีม', '')
     mail = mail.strip()
     query = dat[dat['Email address']==mail]
 
-    header = '''<br><br><p>หากว่าคุณยังไม่ได้ลงทะเบียนหาทีม กรุณาลงทะเบียนก่อนครับ</p>
+    header = '''<p>หากว่าคุณยังไม่ได้ลงทะเบียนหาทีม กรุณาลงทะเบียนก่อนครับ</p>
     <a href="https://forms.gle/B4iKSbtM7zzh41ZB8">คลิกที่นี่เพื่อลงทะเบียนครับ</a>
     <p>เมื่อกรอกฟอร์มแล้ว ให้กดปุ่ม โหลดใหม่ แล้วกรอก E-mail ที่ลงทะเบียนไปครับ</p>'''
     st.markdown(header, unsafe_allow_html=True)
